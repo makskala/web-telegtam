@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2297/2297720.png">
+    <title>Перегляд даних</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #18222d;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #3d6cb9;
+            text-align: center;
+        }
+        pre {
+            background: #1f2e3d;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #2d3e50;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            background: #3d6cb9;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        button:hover {
+            background: #2c5aa8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Збережені дані</h1>
+        
+        <div class="controls">
+            <button onclick="loadData()">Оновити</button>
+            <button onclick="clearData()">Очистити</button>
+            <button onclick="copyToClipboard()">Копіювати</button>
+            <button onclick="downloadData()">Завантажити</button>
+        </div>
+        
+        <pre id="data-content">Завантаження даних...</pre>
+    </div>
+
+    <script>
+        function loadData() {
+            fetch('get_data.php')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('data-content').textContent = data;
+                })
+                .catch(error => {
+                    document.getElementById('data-content').textContent = 'Помилка завантаження: ' + error;
+                });
+        }
+
+        function clearData() {
+            if(confirm('Ви дійсно хочете очистити всі дані?')) {
+                fetch('clear_data.php')
+                    .then(response => response.text())
+                    .then(loadData);
+            }
+        }
+
+        function copyToClipboard() {
+            const content = document.getElementById('data-content');
+            navigator.clipboard.writeText(content.textContent)
+                .then(() => alert('Дані скопійовано!'))
+                .catch(err => alert('Помилка: ' + err));
+        }
+        
+        function downloadData() {
+            const content = document.getElementById('data-content').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'telegram_data_' + new Date().toISOString().split('T')[0] + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        
+        loadData();
+    </script>
+</body>
+</html>
